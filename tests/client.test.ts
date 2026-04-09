@@ -18,7 +18,7 @@ afterEach(() => {
 describe('KanClient', () => {
   describe('request', () => {
     test('successful request returns parsed JSON', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
       const mockData = { id: '123', name: 'Test' };
 
       globalThis.fetch = async () =>
@@ -33,7 +33,7 @@ describe('KanClient', () => {
     });
 
     test('request with custom options passes correct method and body', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
       let receivedUrl = '';
       let receivedMethod = '';
 
@@ -56,7 +56,7 @@ describe('KanClient', () => {
     });
 
     test('throws KanApiError on 400 response', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
 
       globalThis.fetch = async () =>
         new Response(null, {
@@ -73,7 +73,7 @@ describe('KanClient', () => {
     });
 
     test('throws KanApiError on 401 response', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
 
       globalThis.fetch = async () =>
         new Response(null, {
@@ -90,7 +90,7 @@ describe('KanClient', () => {
     });
 
     test('throws KanApiError on 403 response', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
 
       globalThis.fetch = async () =>
         new Response(null, {
@@ -107,7 +107,7 @@ describe('KanClient', () => {
     });
 
     test('throws KanApiError on 404 response', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
 
       globalThis.fetch = async () =>
         new Response(null, {
@@ -124,7 +124,7 @@ describe('KanClient', () => {
     });
 
     test('throws KanApiError on 500 response', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
 
       globalThis.fetch = async () =>
         new Response(null, {
@@ -141,7 +141,7 @@ describe('KanClient', () => {
     });
 
     test('throws KanApiError with unknownError for non-mapped status codes', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, TEST_BASE_URL);
 
       globalThis.fetch = async () =>
         new Response(null, {
