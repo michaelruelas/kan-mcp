@@ -40,6 +40,14 @@ import {
   labelUpdateTool,
   labelDeleteTool,
 } from './label';
+import {
+  checklistCreateTool,
+  checklistUpdateTool,
+  checklistDeleteTool,
+  checklistAddItemTool,
+  checklistUpdateItemTool,
+  checklistDeleteItemTool,
+} from './checklist';
 
 export const tools: Tool[] = [
   workspaceListTool,
@@ -73,6 +81,12 @@ export const tools: Tool[] = [
   labelGetByIdTool,
   labelUpdateTool,
   labelDeleteTool,
+  checklistCreateTool,
+  checklistUpdateTool,
+  checklistDeleteTool,
+  checklistAddItemTool,
+  checklistUpdateItemTool,
+  checklistDeleteItemTool,
 ];
 
 export type { Tool } from './workspace';
