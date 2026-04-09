@@ -10,6 +10,7 @@ const TEST_BASE_URL = process.env.KAN_API_BASE_URL || 'https://kan.bn/api/v1';
 describe('Card Integration Tests', () => {
   let client: KanClient;
   let workspaceId: string | null = null;
+  let listId: string | null = null;
 
   beforeAll(async () => {
     if (!process.env.KAN_API_KEY) {
@@ -20,35 +21,36 @@ describe('Card Integration Tests', () => {
 
     const workspaces = await client.request<any[]>('/workspaces');
     workspaceId = workspaces[0]?.workspace?.publicId;
+
+    if (workspaceId) {
+      const boards = await client.request<any[]>(`/workspaces/${workspaceId}/boards`);
+      const board = boards[0];
+      if (board?.lists?.length > 0) {
+        listId = board.lists[0].publicId;
+      }
+    }
   });
 
   describe('card operations', () => {
-    test('should access cards through list', async () => {
-      if (!client || !workspaceId) {
+    test('should create a card', async () => {
+      if (!client || !listId) {
         expect(true).toBe(true);
         return;
       }
 
-      const boards = await client.request<any[]>(`/workspaces/${workspaceId}/boards`);
-      
-      if (boards.length === 0) {
-        console.log('Skipping: No boards exist in workspace');
-        expect(true).toBe(true);
-        return;
-      }
+      const card = await client.request<any>('/cards', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: `Test Card ${Date.now()}`,
+          description: 'Test description',
+          listPublicId: listId,
+          labelPublicIds: [],
+          memberPublicIds: [],
+          position: 'start'
+        })
+      });
 
-      const boardId = boards[0].publicId;
-      const lists = await client.request<any[]>(`/boards/${boardId}/lists`);
-      
-      if (lists.length === 0) {
-        console.log('Skipping: No lists exist in board');
-        expect(true).toBe(true);
-        return;
-      }
-
-      const listId = lists[0].publicId;
-      const cards = await client.request<any[]>(`/lists/${listId}/cards`);
-      expect(Array.isArray(cards)).toBe(true);
+      expect(card.publicId).toBeDefined();
     });
   });
 });

@@ -10,6 +10,7 @@ const TEST_BASE_URL = process.env.KAN_API_BASE_URL || 'https://kan.bn/api/v1';
 describe('Comment Integration Tests', () => {
   let client: KanClient;
   let workspaceId: string | null = null;
+  let cardId: string | null = null;
 
   beforeAll(async () => {
     if (!process.env.KAN_API_KEY) {
@@ -20,44 +21,43 @@ describe('Comment Integration Tests', () => {
 
     const workspaces = await client.request<any[]>('/workspaces');
     workspaceId = workspaces[0]?.workspace?.publicId;
+
+    if (workspaceId) {
+      const boards = await client.request<any[]>(`/workspaces/${workspaceId}/boards`);
+      const board = boards[0];
+      if (board?.lists?.length > 0) {
+        const listId = board.lists[0].publicId;
+        const card = await client.request<any>('/cards', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: `Comment Test ${Date.now()}`,
+            description: 'Test',
+            listPublicId: listId,
+            labelPublicIds: [],
+            memberPublicIds: [],
+            position: 'start'
+          })
+        });
+        cardId = card.publicId;
+      }
+    }
   });
 
   describe('comment operations', () => {
-    test('should access comments through card', async () => {
-      if (!client || !workspaceId) {
+    test('should add comment to card', async () => {
+      if (!client || !cardId) {
         expect(true).toBe(true);
         return;
       }
 
-      const boards = await client.request<any[]>(`/workspaces/${workspaceId}/boards`);
-      
-      if (boards.length === 0) {
-        console.log('Skipping: No boards exist');
-        expect(true).toBe(true);
-        return;
-      }
+      const comment = await client.request<any>(`/cards/${cardId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({
+          comment: 'Test comment'
+        })
+      });
 
-      const boardId = boards[0].publicId;
-      const lists = await client.request<any[]>(`/boards/${boardId}/lists`);
-      
-      if (lists.length === 0) {
-        console.log('Skipping: No lists exist');
-        expect(true).toBe(true);
-        return;
-      }
-
-      const listId = lists[0].publicId;
-      const cards = await client.request<any[]>(`/lists/${listId}/cards`);
-      
-      if (cards.length === 0) {
-        console.log('Skipping: No cards exist');
-        expect(true).toBe(true);
-        return;
-      }
-
-      const cardId = cards[0].publicId;
-      const comments = await client.request<any[]>(`/cards/${cardId}/comments`);
-      expect(Array.isArray(comments)).toBe(true);
+      expect(comment.publicId).toBeDefined();
     });
   });
 });

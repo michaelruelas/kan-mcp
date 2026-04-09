@@ -23,7 +23,7 @@ describe('List Integration Tests', () => {
   });
 
   describe('list operations', () => {
-    test('should access lists through board', async () => {
+    test('should get lists from board (nested in board response)', async () => {
       if (!client || !workspaceId) {
         expect(true).toBe(true);
         return;
@@ -37,9 +37,9 @@ describe('List Integration Tests', () => {
         return;
       }
 
-      const boardId = boards[0].publicId;
-      const lists = await client.request<any[]>(`/boards/${boardId}/lists`);
-      expect(Array.isArray(lists)).toBe(true);
+      const board = boards[0];
+      expect(Array.isArray(board.lists)).toBe(true);
+      expect(board.lists.length).toBeGreaterThan(0);
     });
   });
 });
