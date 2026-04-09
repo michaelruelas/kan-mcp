@@ -1,7 +1,9 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { KanClient } from "./client.js";
 import { toMcpError } from "./errors.js";
+import { tools, type Tool } from "./tools/mod.js";
 
 const apiKey = process.env.KAN_API_KEY;
 if (!apiKey) {
@@ -15,6 +17,34 @@ const server = new Server(
   { name: "kan-mcp", version: "0.1.0" },
   { capabilities: { tools: {} } }
 );
+
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: tools.map((tool: Tool) => ({
+      name: tool.name,
+      description: tool.description,
+      inputSchema: tool.inputSchema,
+    })),
+  };
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args = {} } = request.params;
+  const tool = tools.find((t: Tool) => t.name === name);
+  if (!tool) {
+    return { content: [{ type: "text", text: `Unknown tool: ${name}` }], isError: true };
+  }
+  try {
+    const result = await tool.handler(client, args);
+    if (result.ok) {
+      return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+    } else {
+      return { content: [{ type: "text", text: result.error }], isError: true };
+    }
+  } catch (error) {
+    return { content: [{ type: "text", text: toMcpError(error).message }], isError: true };
+  }
+});
 
 const transport = new StdioServerTransport();
 server.connect(transport).catch((error) => {
