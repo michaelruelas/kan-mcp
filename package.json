@@ -1,7 +1,21 @@
 {
   "name": "kan-mcp",
   "version": "0.1.0",
+  "description": "MCP server for Kan.bn API - exposes 40 tools for workspace, board, list, card, label, checklist, and comment management",
   "main": "src/index.ts",
+  "type": "module",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "kan",
+    "productivity",
+    "api"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michaelruelas/kan-mcp"
+  },
   "scripts": {
     "build": "bun build src/index.ts --compile --outfile kan-mcp",
     "test": "bun test"

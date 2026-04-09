@@ -25,14 +25,29 @@ kan-mcp exposes 40 tools across 6 domains for managing Kan.bn workspaces:
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Install (for development)
 bun install
 
 # Run tests
 bun test
 
-# Build standalone binary
+# Build for distribution
 bun run build
+```
+
+## Publishing
+
+```bash
+# Login to npm
+npm login
+
+# Publish to npm
+bun publish --access public
+```
+
+After publishing, users can install with:
+```bash
+bunx kan-mcp
 ```
 
 ## Configuration
@@ -44,7 +59,21 @@ export KAN_API_KEY=kan_your_api_key_here
 bun run src/index.ts
 ```
 
-## MCP Server Integration
+## Installation
+
+Install once with bunx (no cloning required):
+
+```bash
+bunx kan-mcp
+```
+
+Or install globally:
+
+```bash
+bun add -g kan-mcp
+```
+
+## MCP Server Configuration
 
 ### Claude Desktop (macOS)
 
@@ -54,8 +83,8 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "kan": {
-      "command": "bun",
-      "args": ["run", "/path/to/kan-mcp/src/index.ts"],
+      "command": "bunx",
+      "args": ["kan-mcp"],
       "env": {
         "KAN_API_KEY": "kan_your_api_key_here"
       }
@@ -72,8 +101,8 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json`:
 {
   "mcpServers": {
     "kan": {
-      "command": "bun",
-      "args": ["run", "C:\\path\\to\\kan-mcp\\src\\index.ts"],
+      "command": "bunx",
+      "args": ["kan-mcp"],
       "env": {
         "KAN_API_KEY": "kan_your_api_key_here"
       }
@@ -90,8 +119,8 @@ Add to Cursor settings (Settings → MCP → Add new server):
 {
   "mcpServers": {
     "kan": {
-      "command": "bun",
-      "args": ["/path/to/kan-mcp/src/index.ts"],
+      "command": "bunx",
+      "args": ["kan-mcp"],
       "env": {
         "KAN_API_KEY": "kan_your_api_key_here"
       }
@@ -108,8 +137,8 @@ Add to `.vscode/mcp.json`:
 {
   "servers": {
     "kan": {
-      "command": "bun",
-      "args": ["/absolute/path/to/kan-mcp/src/index.ts"],
+      "command": "bunx",
+      "args": ["kan-mcp"],
       "env": {
         "KAN_API_KEY": "kan_your_api_key_here"
       }
@@ -126,8 +155,8 @@ Add to your global MCP settings:
 {
   "mcpServers": {
     "kan": {
-      "command": "bun",
-      "args": ["/path/to/kan-mcp/src/index.ts"],
+      "command": "bunx",
+      "args": ["kan-mcp"],
       "env": {
         "KAN_API_KEY": "kan_your_api_key_here"
       }
