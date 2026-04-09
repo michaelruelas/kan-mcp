@@ -83,7 +83,15 @@ describe('card tools', () => {
 
       expect(receivedMethod).toBe('POST');
       expect(receivedUrl).toContain('/cards');
-      expect(JSON.parse(receivedBody)).toEqual(input);
+      expect(JSON.parse(receivedBody)).toEqual({
+        listPublicId: 'list-1',
+        title: 'New Card',
+        description: 'New description',
+        dueDate: '2024-12-31T23:59:59Z',
+        labelPublicIds: [],
+        memberPublicIds: [],
+        position: 'start',
+      });
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data).toEqual(mockCard);
