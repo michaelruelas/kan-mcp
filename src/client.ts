@@ -11,7 +11,7 @@ export class KanClient {
   async request<T>(path: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     const headers: Record<string, string> = {
-      'x-api-key': this.apiKey,
+      'Authorization': `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
     };
 
