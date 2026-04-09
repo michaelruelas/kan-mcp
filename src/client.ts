@@ -2,10 +2,11 @@ import { KanApiError } from './errors.js';
 
 export class KanClient {
   private readonly apiKey: string;
-  private readonly baseUrl = 'https://kan.bn/api/v1';
+  private readonly baseUrl: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
+    this.baseUrl = baseUrl || process.env.KAN_API_BASE_URL || 'https://kan.bn/api/v1';
   }
 
   async request<T>(path: string, options?: RequestInit): Promise<T> {

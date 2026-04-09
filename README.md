@@ -55,8 +55,14 @@ bunx kan-mcp
 kan-mcp requires a Kan.bn API key:
 
 ```bash
-export KAN_API_KEY=kan_your_api_key_here
+export KAN_API_KEY=your_api_key_here
 bun run src/index.ts
+```
+
+Optional: Set a custom API base URL:
+
+```bash
+export KAN_API_BASE_URL=https://kan.tools.pugcasa.com/api/v1
 ```
 
 ## Installation
