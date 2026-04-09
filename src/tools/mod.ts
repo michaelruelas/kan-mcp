@@ -34,6 +34,12 @@ import {
   cardRemoveMemberTool,
   cardListActivitiesTool,
 } from './card';
+import {
+  labelCreateTool,
+  labelGetByIdTool,
+  labelUpdateTool,
+  labelDeleteTool,
+} from './label';
 
 export const tools: Tool[] = [
   workspaceListTool,
@@ -63,6 +69,10 @@ export const tools: Tool[] = [
   cardAddMemberTool,
   cardRemoveMemberTool,
   cardListActivitiesTool,
+  labelCreateTool,
+  labelGetByIdTool,
+  labelUpdateTool,
+  labelDeleteTool,
 ];
 
 export type { Tool } from './workspace';
