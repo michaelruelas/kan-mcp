@@ -48,6 +48,11 @@ import {
   checklistUpdateItemTool,
   checklistDeleteItemTool,
 } from './checklist';
+import {
+  commentAddTool,
+  commentUpdateTool,
+  commentDeleteTool,
+} from './comment';
 
 export const tools: Tool[] = [
   workspaceListTool,
@@ -87,6 +92,9 @@ export const tools: Tool[] = [
   checklistAddItemTool,
   checklistUpdateItemTool,
   checklistDeleteItemTool,
+  commentAddTool,
+  commentUpdateTool,
+  commentDeleteTool,
 ];
 
 export type { Tool } from './workspace';

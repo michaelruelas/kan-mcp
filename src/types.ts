@@ -17,6 +17,7 @@ export const ROUTES = {
   LABELS: '/labels',
   CHECKLISTS: '/checklists',
   ATTACHMENTS: '/attachments',
+  COMMENTS: '/comments',
 } as const;
 
 export const VISIBILITY = ['public', 'private'] as const;
