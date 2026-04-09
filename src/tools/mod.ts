@@ -18,6 +18,11 @@ import {
   boardDeleteTool,
   boardCheckSlugAvailabilityTool,
 } from './board';
+import {
+  listCreateTool,
+  listUpdateTool,
+  listDeleteTool,
+} from './list';
 
 export const tools: Tool[] = [
   workspaceListTool,
@@ -35,6 +40,9 @@ export const tools: Tool[] = [
   boardUpdateTool,
   boardDeleteTool,
   boardCheckSlugAvailabilityTool,
+  listCreateTool,
+  listUpdateTool,
+  listDeleteTool,
 ];
 
 export type { Tool } from './workspace';
