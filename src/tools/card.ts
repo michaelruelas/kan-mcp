@@ -92,11 +92,11 @@ export const cardCreateTool: Tool<CardCreateInput, Card> = {
       const body: Record<string, unknown> = {
         listPublicId: input.listPublicId,
         title: input.title,
+        description: input.description ?? '',
         labelPublicIds: [],
         memberPublicIds: [],
         position: 'start',
       };
-      if (input.description !== undefined) body.description = input.description;
       if (input.dueDate !== undefined) body.dueDate = input.dueDate;
       const data = await client.request<Card>(ROUTES.CARDS, {
         method: 'POST',

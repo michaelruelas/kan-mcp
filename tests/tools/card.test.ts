@@ -120,7 +120,7 @@ describe('card tools', () => {
       const body = JSON.parse(receivedBody);
       expect(body.listPublicId).toBe('list-1');
       expect(body.title).toBe('New Card');
-      expect(body.description).toBeUndefined();
+      expect(body.description).toBe('');
       expect(body.dueDate).toBeUndefined();
       expect(result.ok).toBe(true);
     });
