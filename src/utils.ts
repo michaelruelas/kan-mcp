@@ -46,3 +46,45 @@ export function assertArray(value: unknown, fieldName: string): unknown[] {
   }
   return value;
 }
+
+const SAFE_TAGS = ['p', 'br', 'span', 'a', 'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+const DANGEROUS_TAGS = ['script', 'iframe', 'object', 'embed', 'form', 'input', 'style', 'svg', 'math', 'link', 'meta'];
+
+export function sanitizeHtml(html: string): string {
+  if (!html || typeof html !== 'string') {
+    return '';
+  }
+
+  let result = html;
+
+  result = result.replace(/<(\w+)/gi, (match, tagName) => {
+    const lowerTag = tagName.toLowerCase();
+    if (DANGEROUS_TAGS.includes(lowerTag) || !SAFE_TAGS.includes(lowerTag)) {
+      return `<removed-${lowerTag}`;
+    }
+    return match;
+  });
+
+  result = result.replace(/<\/?(\w+)/gi, (match, tagName) => {
+    const lowerTag = tagName.toLowerCase();
+    if (DANGEROUS_TAGS.includes(lowerTag) || !SAFE_TAGS.includes(lowerTag)) {
+      return `<removed-${lowerTag}>`;
+    }
+    return match;
+  });
+
+  result = result.replace(/<a\s+([^>]+)>/gi, (match, attrs) => {
+    let cleanAttrs = attrs;
+    if (cleanAttrs.includes('href')) {
+      if (cleanAttrs.match(/href=["']javascript:/i) || cleanAttrs.match(/href=["']data:/i)) {
+        cleanAttrs = cleanAttrs.replace(/href=["'][^"']*["']/i, 'href="#"');
+      }
+    }
+    cleanAttrs = cleanAttrs.replace(/\s*on\w+=["'][^"']*["']/gi, '');
+    return `<a ${cleanAttrs}>`;
+  });
+
+  result = result.replace(/\s*on\w+=["'][^"']*["']/gi, '');
+
+  return result;
+}

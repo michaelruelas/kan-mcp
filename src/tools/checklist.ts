@@ -59,10 +59,9 @@ export const checklistCreateTool: Tool<ChecklistCreateInput, Checklist> = {
       assertString(input.cardPublicId, 'cardPublicId');
       assertString(input.name, 'name');
       const body: Record<string, unknown> = {
-        cardPublicId: input.cardPublicId,
         name: input.name,
       };
-      const data = await client.request<Checklist>(ROUTES.CHECKLISTS, {
+      const data = await client.request<Checklist>(`${ROUTES.CARDS}/${input.cardPublicId}/checklists`, {
         method: 'POST',
         body: JSON.stringify(body),
       });
@@ -91,7 +90,7 @@ export const checklistUpdateTool: Tool<ChecklistUpdateInput, Checklist> = {
       const body: Record<string, unknown> = {};
       if (input.name !== undefined) body.name = input.name;
       const data = await client.request<Checklist>(`${ROUTES.CHECKLISTS}/${input.publicId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         body: JSON.stringify(body),
       });
       return success(data);

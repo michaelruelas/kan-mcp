@@ -6,6 +6,7 @@ import {
   commentUpdateTool,
   commentDeleteTool,
 } from '../../src/tools/comment';
+import { sanitizeHtml } from '../../src/utils';
 
 const TEST_API_KEY = 'test-api-key';
 let originalFetch: typeof fetch;
@@ -53,8 +54,8 @@ describe('comment tools', () => {
       const result = await commentAddTool.handler(client, input);
 
       expect(receivedMethod).toBe('POST');
-      expect(receivedUrl).toContain('/comments');
-      expect(JSON.parse(receivedBody)).toEqual(input);
+      expect(receivedUrl).toContain('/cards/card-1/comments');
+      expect(JSON.parse(receivedBody)).toEqual({ comment: 'New comment' });
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data).toEqual(mockComment);
@@ -91,7 +92,7 @@ describe('comment tools', () => {
   describe('comment.update', () => {
     test('updates a comment', async () => {
       const client = new KanClient(TEST_API_KEY);
-      const input = { publicId: 'comment-1', content: 'Updated comment' };
+      const input = { cardPublicId: 'card-1', publicId: 'comment-1', content: 'Updated comment' };
       const updatedComment = { ...mockComment, content: 'Updated comment' };
 
       let receivedUrl = '';
@@ -110,9 +111,9 @@ describe('comment tools', () => {
 
       const result = await commentUpdateTool.handler(client, input);
 
-      expect(receivedMethod).toBe('PATCH');
-      expect(receivedUrl).toContain('/comments/comment-1');
-      expect(JSON.parse(receivedBody)).toEqual({ content: 'Updated comment' });
+      expect(receivedMethod).toBe('PUT');
+      expect(receivedUrl).toContain('/cards/card-1/comments/comment-1');
+      expect(JSON.parse(receivedBody)).toEqual({ comment: 'Updated comment' });
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data.content).toBe('Updated comment');
@@ -123,6 +124,7 @@ describe('comment tools', () => {
       const client = new KanClient(TEST_API_KEY);
 
       const result = await commentUpdateTool.handler(client, {
+        cardPublicId: 'card-1',
         content: 'Test',
       } as any);
 
@@ -136,6 +138,7 @@ describe('comment tools', () => {
       const client = new KanClient(TEST_API_KEY);
 
       const result = await commentUpdateTool.handler(client, {
+        cardPublicId: 'card-1',
         publicId: 'comment-1',
       } as any);
 
@@ -149,7 +152,7 @@ describe('comment tools', () => {
   describe('comment.delete', () => {
     test('deletes a comment', async () => {
       const client = new KanClient(TEST_API_KEY);
-      const input = { publicId: 'comment-1' };
+      const input = { cardPublicId: 'card-1', publicId: 'comment-1' };
 
       let receivedUrl = '';
       let receivedMethod = '';
@@ -166,7 +169,7 @@ describe('comment tools', () => {
       const result = await commentDeleteTool.handler(client, input);
 
       expect(receivedMethod).toBe('DELETE');
-      expect(receivedUrl).toContain('/comments/comment-1');
+      expect(receivedUrl).toContain('/cards/card-1/comments/comment-1');
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data).toEqual({ success: true });
@@ -176,12 +179,114 @@ describe('comment tools', () => {
     test('returns error when publicId is missing', async () => {
       const client = new KanClient(TEST_API_KEY);
 
-      const result = await commentDeleteTool.handler(client, {} as any);
+      const result = await commentDeleteTool.handler(client, {
+        cardPublicId: 'card-1',
+      } as any);
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error).toContain('publicId');
       }
+    });
+  });
+
+  describe('HTML sanitization', () => {
+    test('sanitizes dangerous HTML from comment content', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = {
+        cardPublicId: 'card-1',
+        content: '<p>Hello</p><script>alert("xss")</script><p>World</p>',
+      };
+
+      let receivedBody = '';
+
+      globalThis.fetch = async (url, init) => {
+        receivedBody = init?.body as string;
+        return new Response(JSON.stringify(mockComment), {
+          status: 201,
+          ok: true,
+        }) as Response;
+      };
+
+      const result = await commentAddTool.handler(client, input);
+
+      const body = JSON.parse(receivedBody);
+      expect(body.comment).not.toContain('<script>');
+      expect(body.comment).toContain('<p>Hello</p>');
+      expect(body.comment).toContain('<p>World</p>');
+    });
+
+    test('sanitizes event handlers from comment content', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = {
+        cardPublicId: 'card-1',
+        content: '<p onclick="alert(1)">Click me</p>',
+      };
+
+      let receivedBody = '';
+
+      globalThis.fetch = async (url, init) => {
+        receivedBody = init?.body as string;
+        return new Response(JSON.stringify(mockComment), {
+          status: 201,
+          ok: true,
+        }) as Response;
+      };
+
+      const result = await commentAddTool.handler(client, input);
+
+      const body = JSON.parse(receivedBody);
+      expect(body.comment).not.toContain('onclick');
+      expect(body.comment).toContain('<p>Click me</p>');
+    });
+
+    test('allows safe HTML tags in comment content', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = {
+        cardPublicId: 'card-1',
+        content: '<p>Line 1</p><br><p>Line 2</p><a href="https://example.com">Link</a>',
+      };
+
+      let receivedBody = '';
+
+      globalThis.fetch = async (url, init) => {
+        receivedBody = init?.body as string;
+        return new Response(JSON.stringify(mockComment), {
+          status: 201,
+          ok: true,
+        }) as Response;
+      };
+
+      const result = await commentAddTool.handler(client, input);
+
+      const body = JSON.parse(receivedBody);
+      expect(body.comment).toContain('<p>Line 1</p>');
+      expect(body.comment).toContain('<br>');
+      expect(body.comment).toContain('<a href="https://example.com">Link</a>');
+    });
+
+    test('blocks javascript: URLs in links', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = {
+        cardPublicId: 'card-1',
+        content: '<a href="javascript:alert(1)">Evil link</a>',
+      };
+
+      let receivedBody = '';
+
+      globalThis.fetch = async (url, init) => {
+        receivedBody = init?.body as string;
+        return new Response(JSON.stringify(mockComment), {
+          status: 201,
+          ok: true,
+        }) as Response;
+      };
+
+      const result = await commentAddTool.handler(client, input);
+
+      const body = JSON.parse(receivedBody);
+      expect(body.comment).toContain('href="#"');
+      expect(body.comment).not.toContain('javascript:');
     });
   });
 });

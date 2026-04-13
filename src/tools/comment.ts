@@ -1,6 +1,6 @@
 import { KanClient } from '../client';
 import { Comment, ToolResult, ROUTES } from '../types';
-import { success, error, assertString } from '../utils';
+import { success, error, assertString, sanitizeHtml } from '../utils';
 import { toMcpError } from '../errors';
 
 interface Tool<TInput = unknown, TOutput = unknown> {
@@ -20,22 +20,27 @@ interface CommentAddInput {
 }
 
 interface CommentUpdateInput {
+  cardPublicId: string;
   publicId: string;
   content: string;
 }
 
 interface CommentDeleteInput {
+  cardPublicId: string;
   publicId: string;
 }
 
 export const commentAddTool: Tool<CommentAddInput, Comment> = {
   name: 'comment.add',
-  description: 'Add a comment to a card',
+  description: 'Add a comment to a card. The content field accepts HTML for rich text formatting.',
   inputSchema: {
     type: 'object',
     properties: {
       cardPublicId: { type: 'string' },
-      content: { type: 'string' },
+      content: { 
+        type: 'string',
+        description: 'HTML content. Use <p> for paragraphs, <br> for line breaks, <a href="...">link</a> for links. Plain text with \n will NOT render correctly.'
+      },
     },
     required: ['cardPublicId', 'content'],
   },
@@ -44,10 +49,9 @@ export const commentAddTool: Tool<CommentAddInput, Comment> = {
       assertString(input.cardPublicId, 'cardPublicId');
       assertString(input.content, 'content');
       const body: Record<string, unknown> = {
-        cardPublicId: input.cardPublicId,
-        content: input.content,
+        comment: sanitizeHtml(input.content),
       };
-      const data = await client.request<Comment>(ROUTES.COMMENTS, {
+      const data = await client.request<Comment>(`${ROUTES.CARDS}/${input.cardPublicId}/comments`, {
         method: 'POST',
         body: JSON.stringify(body),
       });
@@ -60,24 +64,29 @@ export const commentAddTool: Tool<CommentAddInput, Comment> = {
 
 export const commentUpdateTool: Tool<CommentUpdateInput, Comment> = {
   name: 'comment.update',
-  description: 'Update a comment',
+  description: 'Update a comment. The content field accepts HTML for rich text formatting.',
   inputSchema: {
     type: 'object',
     properties: {
+      cardPublicId: { type: 'string' },
       publicId: { type: 'string' },
-      content: { type: 'string' },
+      content: { 
+        type: 'string',
+        description: 'HTML content. Use <p> for paragraphs, <br> for line breaks, <a href="...">link</a> for links. Plain text with \n will NOT render correctly.'
+      },
     },
-    required: ['publicId', 'content'],
+    required: ['cardPublicId', 'publicId', 'content'],
   },
   handler: async (client: KanClient, input: CommentUpdateInput): Promise<ToolResult<Comment>> => {
     try {
+      assertString(input.cardPublicId, 'cardPublicId');
       assertString(input.publicId, 'publicId');
       assertString(input.content, 'content');
       const body: Record<string, unknown> = {
-        content: input.content,
+        comment: sanitizeHtml(input.content),
       };
-      const data = await client.request<Comment>(`${ROUTES.COMMENTS}/${input.publicId}`, {
-        method: 'PATCH',
+      const data = await client.request<Comment>(`${ROUTES.CARDS}/${input.cardPublicId}/comments/${input.publicId}`, {
+        method: 'PUT',
         body: JSON.stringify(body),
       });
       return success(data);
@@ -93,14 +102,16 @@ export const commentDeleteTool: Tool<CommentDeleteInput, { success: boolean }> =
   inputSchema: {
     type: 'object',
     properties: {
+      cardPublicId: { type: 'string' },
       publicId: { type: 'string' },
     },
-    required: ['publicId'],
+    required: ['cardPublicId', 'publicId'],
   },
   handler: async (client: KanClient, input: CommentDeleteInput): Promise<ToolResult<{ success: boolean }>> => {
     try {
+      assertString(input.cardPublicId, 'cardPublicId');
       assertString(input.publicId, 'publicId');
-      await client.request(`${ROUTES.COMMENTS}/${input.publicId}`, {
+      await client.request(`${ROUTES.CARDS}/${input.cardPublicId}/comments/${input.publicId}`, {
         method: 'DELETE',
       });
       return success({ success: true });

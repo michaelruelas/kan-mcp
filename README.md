@@ -248,6 +248,34 @@ comment.update                   # Update comment
 comment.delete                   # Delete a comment
 ```
 
+## Rich Text / HTML Support
+
+Card descriptions and comment content support HTML formatting. The API automatically sanitizes HTML to prevent XSS attacks, allowing only safe tags and attributes.
+
+### Supported HTML Tags
+
+- `<p>...</p>` - Paragraphs
+- `<br>` - Line breaks
+- `<strong>`, `<em>`, `<b>`, `<i>`, `<u>` - Text formatting
+- `<a href="...">...</a>` - Links (javascript: and data: URLs are blocked)
+- `<ul>`, `<ol>`, `<li>` - Lists
+- `<h1>` through `<h6>` - Headings
+
+### Example
+
+```html
+<p>Salary: $156,400 - $225,000</p>
+<p>Location: Washington, DC area (Hybrid)</p>
+<p>Tech Stack: Python, Java, Spark, BigQuery, Kafka, AWS</p>
+<p><a href="https://linkedin.com/jobs/123">View on LinkedIn</a></p>
+```
+
+### Important
+
+- **Plain text with `\n` will NOT render correctly** - Use `<br>` or `<p>` tags for line breaks
+- Dangerous tags like `<script>`, `<iframe>`, `<form>` are automatically removed
+- Event handler attributes (onclick, onmouseover, etc.) are stripped
+
 ## Usage Examples
 
 ### Create a workspace and board

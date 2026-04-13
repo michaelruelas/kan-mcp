@@ -213,7 +213,7 @@ describe('card tools', () => {
 
       const result = await cardUpdateTool.handler(client, input);
 
-      expect(receivedMethod).toBe('PATCH');
+      expect(receivedMethod).toBe('PUT');
       expect(receivedUrl).toContain('/cards/card-1');
       expect(JSON.parse(receivedBody)).toEqual({ title: 'Updated Card' });
       expect(result.ok).toBe(true);
@@ -385,7 +385,7 @@ describe('card tools', () => {
 
       const result = await cardAddLabelTool.handler(client, input);
 
-      expect(receivedMethod).toBe('POST');
+      expect(receivedMethod).toBe('PUT');
       expect(receivedUrl).toContain('/cards/card-1/labels/label-1');
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -493,7 +493,7 @@ describe('card tools', () => {
 
       const result = await cardAddMemberTool.handler(client, input);
 
-      expect(receivedMethod).toBe('POST');
+      expect(receivedMethod).toBe('PUT');
       expect(receivedUrl).toContain('/cards/card-1/members/member-1');
       expect(result.ok).toBe(true);
       if (result.ok) {

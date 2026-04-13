@@ -65,8 +65,8 @@ describe('checklist tools', () => {
       const result = await checklistCreateTool.handler(client, input);
 
       expect(receivedMethod).toBe('POST');
-      expect(receivedUrl).toContain('/checklists');
-      expect(JSON.parse(receivedBody)).toEqual(input);
+      expect(receivedUrl).toContain('/cards/card-1/checklists');
+      expect(JSON.parse(receivedBody)).toEqual({ name: 'New Checklist' });
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data).toEqual(mockChecklist);
@@ -122,7 +122,7 @@ describe('checklist tools', () => {
 
       const result = await checklistUpdateTool.handler(client, input);
 
-      expect(receivedMethod).toBe('PATCH');
+      expect(receivedMethod).toBe('PUT');
       expect(receivedUrl).toContain('/checklists/checklist-1');
       expect(JSON.parse(receivedBody)).toEqual({ name: 'Updated Checklist' });
       expect(result.ok).toBe(true);

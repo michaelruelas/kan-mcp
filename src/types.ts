@@ -77,6 +77,7 @@ export interface Card {
   publicId: string;
   listPublicId: string;
   title: string;
+  /** HTML-formatted description with rich text support */
   description?: string;
   index: number;
   dueDate?: string;
@@ -115,6 +116,7 @@ export interface Comment {
   publicId: string;
   cardPublicId: string;
   memberPublicId: string;
+  /** HTML-formatted content with rich text support */
   content: string;
   createdAt: string;
   updatedAt: string;

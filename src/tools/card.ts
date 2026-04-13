@@ -1,6 +1,6 @@
 import { KanClient } from '../client';
 import { Card, ToolResult, ROUTES } from '../types';
-import { success, error, assertString, assertOptionalString, assertNumber } from '../utils';
+import { success, error, assertString, assertOptionalString, assertNumber, sanitizeHtml } from '../utils';
 import { toMcpError } from '../errors';
 
 interface Tool<TInput = unknown, TOutput = unknown> {
@@ -72,13 +72,16 @@ interface CardListActivitiesInput {
 
 export const cardCreateTool: Tool<CardCreateInput, Card> = {
   name: 'card.create',
-  description: 'Create a new card',
+  description: 'Create a new card. The description field accepts HTML for rich text formatting.',
   inputSchema: {
     type: 'object',
     properties: {
       listPublicId: { type: 'string' },
       title: { type: 'string' },
-      description: { type: 'string' },
+      description: { 
+        type: 'string',
+        description: 'HTML content. Use <p> for paragraphs, <br> for line breaks, <a href="...">link</a> for links. Plain text with \n will NOT render correctly.'
+      },
       dueDate: { type: 'string' },
     },
     required: ['listPublicId', 'title'],
@@ -92,7 +95,7 @@ export const cardCreateTool: Tool<CardCreateInput, Card> = {
       const body: Record<string, unknown> = {
         listPublicId: input.listPublicId,
         title: input.title,
-        description: input.description ?? '',
+        description: input.description ? sanitizeHtml(input.description) : '',
         labelPublicIds: [],
         memberPublicIds: [],
         position: 'start',
@@ -132,13 +135,16 @@ export const cardGetByIdTool: Tool<CardGetByIdInput, Card> = {
 
 export const cardUpdateTool: Tool<CardUpdateInput, Card> = {
   name: 'card.update',
-  description: 'Update a card',
+  description: 'Update a card. The description field accepts HTML for rich text formatting.',
   inputSchema: {
     type: 'object',
     properties: {
       publicId: { type: 'string' },
       title: { type: 'string' },
-      description: { type: 'string' },
+      description: { 
+        type: 'string',
+        description: 'HTML content. Use <p> for paragraphs, <br> for line breaks, <a href="...">link</a> for links. Plain text with \n will NOT render correctly.'
+      },
       dueDate: { type: 'string' },
       index: { type: 'number' },
     },
@@ -152,11 +158,11 @@ export const cardUpdateTool: Tool<CardUpdateInput, Card> = {
       assertOptionalString(input.dueDate, 'dueDate');
       const body: Record<string, unknown> = {};
       if (input.title !== undefined) body.title = input.title;
-      if (input.description !== undefined) body.description = input.description;
+      if (input.description !== undefined) body.description = sanitizeHtml(input.description);
       if (input.dueDate !== undefined) body.dueDate = input.dueDate;
       if (input.index !== undefined) body.index = input.index;
       const data = await client.request<Card>(`${ROUTES.CARDS}/${input.publicId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         body: JSON.stringify(body),
       });
       return success(data);
@@ -206,7 +212,7 @@ export const cardAddLabelTool: Tool<CardAddLabelInput, Card> = {
       assertString(input.labelPublicId, 'labelPublicId');
       const data = await client.request<Card>(
         `${ROUTES.CARDS}/${input.cardPublicId}/labels/${input.labelPublicId}`,
-        { method: 'POST' }
+        { method: 'PUT' }
       );
       return success(data);
     } catch (err) {
@@ -258,7 +264,7 @@ export const cardAddMemberTool: Tool<CardAddMemberInput, Card> = {
       assertString(input.memberPublicId, 'memberPublicId');
       const data = await client.request<Card>(
         `${ROUTES.CARDS}/${input.cardPublicId}/members/${input.memberPublicId}`,
-        { method: 'POST' }
+        { method: 'PUT' }
       );
       return success(data);
     } catch (err) {
