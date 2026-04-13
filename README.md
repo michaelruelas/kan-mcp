@@ -10,17 +10,17 @@ Built with Bun + TypeScript.
 
 ## Overview
 
-kan-mcp exposes 40 tools across 6 domains for managing Kan.bn workspaces:
+kan-mcp exposes 40 tools across 7 domains for managing Kan.bn workspaces:
 
-| Domain | Tools | Description |
-|--------|-------|-------------|
-| workspace | 8 | List, create, get, update, delete, search workspaces |
-| board | 7 | Manage boards with slug availability checking |
-| list | 3 | Create, update, delete lists |
-| card | 9 | Full card management with labels, members, activities |
-| label | 4 | Create and manage colored labels |
-| checklist | 6 | Checklist management with items |
-| comment | 3 | Card comments |
+| Domain     | Tools | Description                              |
+|------------|-------|------------------------------------------|
+| workspace  | 8     | List, create, get, update, delete, search workspaces |
+| board      | 7     | Manage boards with slug availability checking |
+| list       | 3     | Create, update, delete lists             |
+| card       | 9     | Full card management with labels, members, activities |
+| label      | 4     | Create and manage colored labels         |
+| checklist  | 6     | Checklist management with items          |
+| comment    | 3     | Card comments                            |
 
 ## Quick Start
 
@@ -81,27 +81,9 @@ bun add -g kan-mcp
 
 ## MCP Server Configuration
 
-### Claude Desktop (macOS)
+> **Note:** The configuration format is the same for all agents/IDEs. Check your agent/IDE documentation for where to add this JSON.
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "kan": {
-      "command": "bunx",
-      "args": ["kan-mcp"],
-      "env": {
-        "KAN_API_KEY": "kan_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### Claude Desktop (Windows)
-
-Add to `%APPDATA%\Claude\claude_desktop_config.json`:
+Add this to your agent/IDE's MCP server configuration:
 
 ```json
 {
@@ -117,59 +99,15 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json`:
 }
 ```
 
-### Cursor
+### Where to add the configuration
 
-Add to Cursor settings (Settings → MCP → Add new server):
-
-```json
-{
-  "mcpServers": {
-    "kan": {
-      "command": "bunx",
-      "args": ["kan-mcp"],
-      "env": {
-        "KAN_API_KEY": "kan_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### VS Code with Copilot
-
-Add to `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "kan": {
-      "command": "bunx",
-      "args": ["kan-mcp"],
-      "env": {
-        "KAN_API_KEY": "kan_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### Roo (CLINE)
-
-Add to your global MCP settings:
-
-```json
-{
-  "mcpServers": {
-    "kan": {
-      "command": "bunx",
-      "args": ["kan-mcp"],
-      "env": {
-        "KAN_API_KEY": "kan_your_api_key_here"
-      }
-    }
-  }
-}
-```
+| Agent/IDE | Location |
+|-----------|----------|
+| Claude Desktop (macOS) | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Claude Desktop (Windows) | `%APPDATA%\Claude\claude_desktop_config.json` |
+| Cursor | Settings → MCP → Add new server |
+| VS Code with Copilot | `.vscode/mcp.json` |
+| Roo (CLINE) | Your global MCP settings |
 
 ## Available Tools
 
@@ -246,6 +184,12 @@ checklist.deleteItem             # Delete checklist item
 comment.add                      # Add comment to card
 comment.update                   # Update comment
 comment.delete                   # Delete a comment
+```
+
+### Server Tools
+
+```
+server.health                    # Check MCP server and dependency health
 ```
 
 ## Rich Text / HTML Support
@@ -334,16 +278,17 @@ Input: { "publicId": "card_xxx", "priority": "high" }
 ------------------------|---------|---------|-------------------
 File                    | % Funcs | % Lines | Uncovered Line #s
 ------------------------|---------|---------|-------------------
-All files               |   95.83 |   96.89 |
- src/client.ts          |  100.00 |  100.00 |
- src/errors.ts          |  100.00 |  100.00 |
+All files               |   86.50 |   89.09 |
+ src/client.ts          |   87.50 |  100.00 |
+ src/errors.ts          |   40.00 |   48.78 | 1-7,11-12,17-29
  src/tools/board.ts     |  100.00 |  100.00 |
  src/tools/card.ts      |  100.00 |  100.00 |
- src/tools/checklist.ts |  100.00 |   99.38 |
+ src/tools/checklist.ts |  100.00 |  100.00 |
  src/tools/comment.ts   |  100.00 |  100.00 |
  src/tools/label.ts     |  100.00 |  100.00 |
  src/tools/list.ts      |  100.00 |  100.00 |
- src/tools/workspace.ts  |  100.00 |  100.00 |
+ src/tools/server.ts    |  100.00 |   97.73 |
+ src/tools/workspace.ts |  100.00 |  100.00 |
  src/types.ts           |  100.00 |  100.00 |
 ------------------------|---------|---------|-------------------
 ```
@@ -359,7 +304,7 @@ kan-mcp/
 │   ├── errors.ts          # KanApiError, McpError, error mapping
 │   ├── utils.ts           # Type guards, builders
 │   └── tools/
-│       ├── mod.ts         # Aggregates all 40 tools
+│       ├── server.ts      # Server-level tools (health check)
 │       ├── workspace.ts   # 8 workspace tools
 │       ├── board.ts      # 7 board tools
 │       ├── list.ts       # 3 list tools

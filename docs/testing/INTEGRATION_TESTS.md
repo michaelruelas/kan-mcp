@@ -2,6 +2,11 @@
 
 This document describes how to run integration tests against the real Kan.bn API.
 
+> **Note for agents/IDEs:** Environment variables can typically be set via:
+> - CLI: `INTEGRATION_TEST=true KAN_API_KEY=your_key bun test tests/integration`
+> - MCP config: Add to `env` section of your MCP server configuration
+> - IDE: Check your IDE's environment variable settings
+
 ## Setup
 
 1. Copy `.env.example` to `.env`:
@@ -9,33 +14,15 @@ This document describes how to run integration tests against the real Kan.bn API
 cp .env.example .env
 ```
 
-2. Set your test credentials in `.env`:
-```
+2. Set your credentials in `.env`:
+```bash
 KAN_API_KEY=your_test_api_key
-KAN_API_BASE_URL=https://kan.tools.pugcasa.com/api/v1
+KAN_API_BASE_URL=https://kan.bn/api/v1  # Optional, defaults to kan.bn
 ```
 
-3. Install test dependencies:
+3. Run integration tests:
 ```bash
-bun install
-```
-
-## Running Integration Tests
-
-Run all integration tests:
-```bash
-bun test:integration
-```
-
-Run tests for a specific domain:
-```bash
-bun test:integration --workspace
-bun test:integration --board
-bun test:integration --list
-bun test:integration --card
-bun test:integration --label
-bun test:integration --checklist
-bun test:integration --comment
+INTEGRATION_TEST=true bun test tests/integration
 ```
 
 ## Test Environments
@@ -127,8 +114,8 @@ Manual cleanup may be required.
 | Tool | Required Input | Optional Input | Filters/Options |
 |------|---------------|---------------|-----------------|
 | `comment.add` | `cardPublicId`, `content` | - | - |
-| `comment.update` | `publicId`, `content` | - | - |
-| `comment.delete` | `publicId` | - | - |
+| `comment.update` | `cardPublicId`, `publicId`, `content` | - | - |
+| `comment.delete` | `cardPublicId`, `publicId` | - | - |
 
 ## Test Scenarios
 
@@ -179,5 +166,5 @@ If tests fail, check:
 
 Run with verbose output:
 ```bash
-bun test:integration --reporter=verbose
+INTEGRATION_TEST=true bun test tests/integration --reporter=verbose
 ```
