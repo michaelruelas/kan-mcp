@@ -240,6 +240,76 @@ describe('board tools', () => {
         expect(result.error).toContain('publicId');
       }
     });
+
+    test('passes dueDateFilters to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { publicId: 'board-1', dueDateFilters: ['overdue', 'today'] };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetByIdTool.handler(client, input);
+      expect(decodeURIComponent(receivedUrl)).toContain('dueDateFilters=overdue,today');
+    });
+
+    test('passes members filter to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { publicId: 'board-1', members: ['user-1', 'user-2'] };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetByIdTool.handler(client, input);
+      expect(decodeURIComponent(receivedUrl)).toContain('members=user-1,user-2');
+    });
+
+    test('passes labels filter to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { publicId: 'board-1', labels: ['label-1', 'label-2'] };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetByIdTool.handler(client, input);
+      expect(decodeURIComponent(receivedUrl)).toContain('labels=label-1,label-2');
+    });
+
+    test('passes lists filter to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { publicId: 'board-1', lists: ['list-1', 'list-2'] };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetByIdTool.handler(client, input);
+      expect(decodeURIComponent(receivedUrl)).toContain('lists=list-1,list-2');
+    });
+
+    test('passes type filter to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { publicId: 'board-1', type: 'template' as const };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetByIdTool.handler(client, input);
+      expect(receivedUrl).toContain('type=template');
+    });
   });
 
   describe('board.getBySlug', () => {
@@ -264,6 +334,34 @@ describe('board tools', () => {
       if (result.ok) {
         expect(result.data).toEqual(mockBoard);
       }
+    });
+
+    test('passes dueDateFilters to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { workspacePublicId: 'ws-1', slug: 'test-board', dueDateFilters: ['overdue'] };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetBySlugTool.handler(client, input);
+      expect(decodeURIComponent(receivedUrl)).toContain('dueDateFilters=overdue');
+    });
+
+    test('passes members filter to API', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { workspacePublicId: 'ws-1', slug: 'test-board', members: ['user-1'] };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify(mockBoard), { status: 200, ok: true }) as Response;
+      };
+
+      await boardGetBySlugTool.handler(client, input);
+      expect(decodeURIComponent(receivedUrl)).toContain('members=user-1');
     });
 
     test('returns error when workspacePublicId is missing', async () => {
