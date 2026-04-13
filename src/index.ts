@@ -1,10 +1,11 @@
 #!/usr/bin/env bun
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { KanClient } from "./client.js";
 import { toMcpError } from "./errors.js";
 import { tools, type Tool } from "./tools/mod.js";
+import { resourceList, handleResource } from "./tools/resources.js";
 
 const apiKey = process.env.KAN_API_KEY;
 if (!apiKey) {
@@ -16,7 +17,7 @@ const client = new KanClient(apiKey);
 
 const server = new Server(
   { name: "kan-mcp", version: "0.1.0" },
-  { capabilities: { tools: {} } }
+  { capabilities: { tools: {}, resources: {} } }
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -44,6 +45,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
   } catch (error) {
     return { content: [{ type: "text", text: toMcpError(error).message }], isError: true };
+  }
+});
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: resourceList.map(r => ({
+    uri: r.uri,
+    name: r.name,
+    description: r.description,
+    mimeType: r.mimeType,
+  })),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+  try {
+    return await handleResource(uri, client);
+  } catch (error) {
+    return {
+      contents: [{
+        uri,
+        mimeType: 'application/json',
+        text: JSON.stringify({ error: toMcpError(error).message }),
+      }],
+      isError: true,
+    };
   }
 });
 
