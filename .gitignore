@@ -147,3 +147,8 @@ vite.config.ts.timestamp-*
 
 *.bun-build
 kan-mcp
+
+# Compiled TypeScript / Bun files
+src/**/*.js
+tests/**/*.js
+!**/src/**/*.d.ts

@@ -1,6 +1,6 @@
 import { KanClient } from '../client';
 import { List, ToolResult, ROUTES } from '../types';
-import { success, error, assertString, assertOptionalString, assertNumber } from '../utils';
+import { success, error, assertString, assertOptionalString } from '../utils';
 import { toMcpError } from '../errors';
 
 interface Tool<TInput = unknown, TOutput = unknown> {

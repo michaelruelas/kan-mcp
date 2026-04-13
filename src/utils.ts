@@ -30,6 +30,13 @@ export function assertNumber(value: unknown, fieldName: string): number {
   return value;
 }
 
+export function assertBoolean(value: unknown, fieldName: string): boolean {
+  if (typeof value !== 'boolean') {
+    throw new Error(`${fieldName} must be a boolean`);
+  }
+  return value;
+}
+
 export function assertOptionalString(value: unknown, fieldName: string): string | undefined {
   if (value === undefined || value === null) {
     return undefined;

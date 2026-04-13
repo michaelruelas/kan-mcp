@@ -41,7 +41,7 @@ export type ToolError = { ok: false; error: string };
 export type ToolResult<T> = ToolSuccess<T> | ToolError;
 
 export interface Workspace {
-  publicId: string;
+  publicId: WorkspaceId;
   name: string;
   slug: string;
   description?: string;
@@ -52,8 +52,8 @@ export interface Workspace {
 }
 
 export interface Board {
-  publicId: string;
-  workspacePublicId: string;
+  publicId: BoardId;
+  workspacePublicId: WorkspaceId;
   name: string;
   slug: string;
   visibility: Visibility;
@@ -65,8 +65,8 @@ export interface Board {
 }
 
 export interface List {
-  publicId: string;
-  boardPublicId: string;
+  publicId: ListId;
+  boardPublicId: BoardId;
   name: string;
   index: number;
   createdAt: string;
@@ -74,8 +74,8 @@ export interface List {
 }
 
 export interface Card {
-  publicId: string;
-  listPublicId: string;
+  publicId: CardId;
+  listPublicId: ListId;
   title: string;
   /** HTML-formatted description with rich text support */
   description?: string;
@@ -86,8 +86,8 @@ export interface Card {
 }
 
 export interface Label {
-  publicId: string;
-  boardPublicId: string;
+  publicId: LabelId;
+  boardPublicId: BoardId;
   name: string;
   colourCode: string;
   createdAt: string;
@@ -95,16 +95,16 @@ export interface Label {
 }
 
 export interface Checklist {
-  publicId: string;
-  cardPublicId: string;
+  publicId: ChecklistId;
+  cardPublicId: CardId;
   name: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ChecklistItem {
-  publicId: string;
-  checklistPublicId: string;
+  publicId: ChecklistItemId;
+  checklistPublicId: ChecklistId;
   title: string;
   completed: boolean;
   index: number;
@@ -113,9 +113,9 @@ export interface ChecklistItem {
 }
 
 export interface Comment {
-  publicId: string;
-  cardPublicId: string;
-  memberPublicId: string;
+  publicId: CommentId;
+  cardPublicId: CardId;
+  memberPublicId: MemberId;
   /** HTML-formatted content with rich text support */
   content: string;
   createdAt: string;

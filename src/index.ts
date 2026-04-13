@@ -52,3 +52,11 @@ server.connect(transport).catch((error) => {
   console.error("Server error:", toMcpError(error).message);
   process.exit(1);
 });
+
+const shutdown = () => {
+  console.error("Shutting down gracefully...");
+  process.exit(0);
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

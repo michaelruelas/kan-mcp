@@ -4,7 +4,7 @@ import { success, error, assertString, assertOptionalString } from '../utils';
 import { toMcpError } from '../errors';
 import { ROUTES } from '../types';
 
-interface Tool<TInput = unknown, TOutput = unknown> {
+export interface Tool<TInput = unknown, TOutput = unknown> {
   name: string;
   description: string;
   inputSchema: {

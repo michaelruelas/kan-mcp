@@ -1,6 +1,6 @@
 import { KanClient } from '../client';
 import { Checklist, ChecklistItem, ToolResult, ROUTES } from '../types';
-import { success, error, assertString, assertOptionalString } from '../utils';
+import { success, error, assertString, assertOptionalString, assertBoolean } from '../utils';
 import { toMcpError } from '../errors';
 
 interface Tool<TInput = unknown, TOutput = unknown> {
@@ -174,8 +174,8 @@ export const checklistUpdateItemTool: Tool<ChecklistUpdateItemInput, ChecklistIt
     try {
       assertString(input.publicId, 'publicId');
       assertOptionalString(input.title, 'title');
-      if (input.completed !== undefined && typeof input.completed !== 'boolean') {
-        throw new Error('completed must be a boolean');
+      if (input.completed !== undefined) {
+        assertBoolean(input.completed, 'completed');
       }
       const body: Record<string, unknown> = {};
       if (input.title !== undefined) body.title = input.title;

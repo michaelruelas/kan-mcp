@@ -53,8 +53,10 @@ import {
   commentUpdateTool,
   commentDeleteTool,
 } from './comment';
+import { serverHealthTool } from './server';
 
-export const tools: Tool[] = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const tools: any[] = [
   workspaceListTool,
   workspaceCreateTool,
   workspaceGetByIdTool,
@@ -95,6 +97,7 @@ export const tools: Tool[] = [
   commentAddTool,
   commentUpdateTool,
   commentDeleteTool,
+  serverHealthTool,
 ];
 
 export type { Tool } from './workspace';

@@ -55,7 +55,7 @@ describe('workspace tools', () => {
     });
 
     test('returns error on API failure', async () => {
-      const client = new KanClient(TEST_API_KEY);
+      const client = new KanClient(TEST_API_KEY, undefined, 5000, 0);
 
       globalThis.fetch = async () =>
         new Response(null, {
