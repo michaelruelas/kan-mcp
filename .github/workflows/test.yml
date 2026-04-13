@@ -44,4 +44,4 @@ jobs:
           bun-version: latest
       - uses: actions/checkout@v4
       - run: bun install
-      - run: bun tsc --noEmit
+      - run: bunx tsc --noEmit
