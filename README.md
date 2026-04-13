@@ -10,7 +10,7 @@ Built with Bun + TypeScript.
 
 ## Overview
 
-kan-mcp exposes 40 tools across 7 domains for managing Kan.bn workspaces:
+kan-mcp exposes 40 tools across 7 domains for managing Kan.bn workspaces, plus MCP Resources for efficient read operations:
 
 | Domain     | Tools | Description                              |
 |------------|-------|------------------------------------------|
@@ -21,6 +21,7 @@ kan-mcp exposes 40 tools across 7 domains for managing Kan.bn workspaces:
 | label      | 4     | Create and manage colored labels         |
 | checklist  | 6     | Checklist management with items          |
 | comment    | 3     | Card comments                            |
+| **Resources** | **3** | **Read-only URIs for efficient context loading** |
 
 ## Quick Start
 
@@ -129,12 +130,23 @@ workspace.checkSlugAvailability   # Check if slug is available
 ```
 board.list                       # List boards (with filters)
 board.create                     # Create a new board
-board.getById                    # Get board by ID
-board.getBySlug                  # Get board by slug
+board.getById                    # Get board by ID (with card filters)
+board.getBySlug                  # Get board by slug (with card filters)
 board.update                     # Update board properties
 board.delete                     # Delete a board
 board.checkSlugAvailability      # Check if slug is available
 ```
+
+#### Board Filtering
+`board.getById` and `board.getBySlug` support filtering cards within the board:
+
+| Parameter | Description |
+|-----------|-------------|
+| `members` | Filter cards by assigned member IDs |
+| `labels` | Filter cards by label IDs |
+| `lists` | Filter cards by list IDs |
+| `dueDateFilters` | Filter by due date status: `overdue`, `today`, `tomorrow`, `next-week`, `next-month`, `no-due-date` |
+| `type` | Filter by board type: `regular`, `template` |
 
 ### List Tools
 
@@ -155,7 +167,7 @@ card.addLabel                    # Add label to card
 card.removeLabel                 # Remove label from card
 card.addMember                   # Add member to card
 card.removeMember                # Remove member from card
-card.listActivities              # List card activities
+card.listActivities              # List card activities (with cursor pagination)
 ```
 
 ### Label Tools
@@ -191,6 +203,26 @@ comment.delete                   # Delete a comment
 ```
 server.health                    # Check MCP server and dependency health
 ```
+
+### MCP Resources
+
+MCP Resources provide read-only data URIs for efficient LLM context loading. Unlike tools (which require an action), resources allow the LLM to read data directly via URI.
+
+```
+kan://stats                                    # Application statistics
+kan://board/{boardPublicId}                   # Board by public ID
+kan://workspace/{workspaceSlug}/board/{boardSlug}  # Board by slug
+```
+
+#### Card Activities Pagination
+`card.listActivities` supports cursor-based pagination:
+
+| Parameter | Description |
+|-----------|-------------|
+| `limit` | Number of activities (1-100, default 10) |
+| `cursor` | ISO timestamp cursor for next page |
+
+Response includes `hasMore` and `nextCursor` for easy iteration.
 
 ## Rich Text / HTML Support
 
@@ -298,13 +330,14 @@ All files               |   86.50 |   89.09 |
 ```
 kan-mcp/
 ├── src/
-│   ├── index.ts           # MCP server entry, tool registration
+│   ├── index.ts           # MCP server entry, tool & resource registration
 │   ├── client.ts          # Kan API client with error mapping
 │   ├── types.ts           # Branded IDs, discriminated unions
 │   ├── errors.ts          # KanApiError, McpError, error mapping
 │   ├── utils.ts           # Type guards, builders
 │   └── tools/
 │       ├── server.ts      # Server-level tools (health check)
+│       ├── resources.ts   # MCP resource handlers
 │       ├── workspace.ts   # 8 workspace tools
 │       ├── board.ts      # 7 board tools
 │       ├── list.ts       # 3 list tools
