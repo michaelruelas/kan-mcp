@@ -121,3 +121,35 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Stats {
+  users: number;
+  workspaces: number;
+  boards: number;
+  lists: number;
+  cards: number;
+  cardComments: number;
+  cardAttachments: number;
+  cardActivityLogs: number;
+  labels: number;
+  checklists: number;
+  checklistItems: number;
+  activeMembers: number;
+  activeInviteLinks: number;
+  imports: number;
+}
+
+export interface ActivityPage {
+  activities: Activity[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
+interface Activity {
+  publicId: string;
+  cardPublicId: string;
+  memberPublicId: string;
+  action: string;
+  createdAt: string;
+  updatedAt: string;
+}
