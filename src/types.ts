@@ -112,16 +112,6 @@ export interface ChecklistItem {
   updatedAt: string;
 }
 
-export interface Comment {
-  publicId: CommentId;
-  cardPublicId: CardId;
-  memberPublicId: MemberId;
-  /** HTML-formatted content with rich text support */
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Stats {
   users: number;
   workspaces: number;
@@ -139,17 +129,17 @@ export interface Stats {
   imports: number;
 }
 
-export interface ActivityPage {
-  activities: Activity[];
-  hasMore: boolean;
-  nextCursor: string | null;
-}
-
-interface Activity {
+export interface Activity {
   publicId: string;
   cardPublicId: string;
   memberPublicId: string;
   action: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ActivityPage {
+  activities: Activity[];
+  hasMore: boolean;
+  nextCursor: string | null;
 }

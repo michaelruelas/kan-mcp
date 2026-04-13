@@ -30,6 +30,31 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: resourceList.map(r => ({
+    uri: r.uri,
+    name: r.name,
+    description: r.description,
+    mimeType: r.mimeType,
+  })),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+  try {
+    return await handleResource(uri, client);
+  } catch (error) {
+    return {
+      contents: [{
+        uri,
+        mimeType: 'application/json',
+        text: JSON.stringify({ error: toMcpError(error).message }),
+      }],
+      isError: true,
+    };
+  }
+});
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args = {} } = request.params;
   const tool = tools.find((t: Tool) => t.name === name);

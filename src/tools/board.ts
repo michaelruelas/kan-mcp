@@ -28,11 +28,21 @@ interface BoardCreateInput {
 
 interface BoardGetByIdInput {
   publicId: string;
+  members?: string[];
+  labels?: string[];
+  lists?: string[];
+  dueDateFilters?: DueDateFilter[];
+  type?: 'regular' | 'template';
 }
 
 interface BoardGetBySlugInput {
   workspacePublicId: string;
   slug: string;
+  members?: string[];
+  labels?: string[];
+  lists?: string[];
+  dueDateFilters?: DueDateFilter[];
+  type?: 'regular' | 'template';
 }
 
 interface BoardUpdateInput {
@@ -49,6 +59,9 @@ interface BoardCheckSlugInput {
   workspacePublicId: string;
   slug: string;
 }
+
+export const DUE_DATE_FILTERS = ['overdue', 'today', 'tomorrow', 'next-week', 'next-month', 'no-due-date'] as const;
+export type DueDateFilter = (typeof DUE_DATE_FILTERS)[number];
 
 export const boardListTool: Tool<BoardListInput, Board[]> = {
   name: 'board.list',
@@ -118,13 +131,26 @@ export const boardGetByIdTool: Tool<BoardGetByIdInput, Board> = {
     type: 'object',
     properties: {
       publicId: { type: 'string' },
+      members: { type: 'array', items: { type: 'string' } },
+      labels: { type: 'array', items: { type: 'string' } },
+      lists: { type: 'array', items: { type: 'string' } },
+      dueDateFilters: { type: 'array', items: { type: 'string', enum: ['overdue', 'today', 'tomorrow', 'next-week', 'next-month', 'no-due-date'] } },
+      type: { type: 'string', enum: ['regular', 'template'] },
     },
     required: ['publicId'],
   },
   handler: async (client: KanClient, input: BoardGetByIdInput): Promise<ToolResult<Board>> => {
     try {
       assertString(input.publicId, 'publicId');
-      const data = await client.request<Board>(`${ROUTES.BOARDS}/${input.publicId}`);
+      const queryParams = new URLSearchParams();
+      if (input.members?.length) queryParams.set('members', input.members.join(','));
+      if (input.labels?.length) queryParams.set('labels', input.labels.join(','));
+      if (input.lists?.length) queryParams.set('lists', input.lists.join(','));
+      if (input.dueDateFilters?.length) queryParams.set('dueDateFilters', input.dueDateFilters.join(','));
+      if (input.type) queryParams.set('type', input.type);
+      const query = queryParams.toString();
+      const path = `${ROUTES.BOARDS}/${input.publicId}${query ? `?${query}` : ''}`;
+      const data = await client.request<Board>(path);
       return success(data);
     } catch (err) {
       return error(toMcpError(err).message);
@@ -140,6 +166,11 @@ export const boardGetBySlugTool: Tool<BoardGetBySlugInput, Board> = {
     properties: {
       workspacePublicId: { type: 'string' },
       slug: { type: 'string' },
+      members: { type: 'array', items: { type: 'string' } },
+      labels: { type: 'array', items: { type: 'string' } },
+      lists: { type: 'array', items: { type: 'string' } },
+      dueDateFilters: { type: 'array', items: { type: 'string', enum: ['overdue', 'today', 'tomorrow', 'next-week', 'next-month', 'no-due-date'] } },
+      type: { type: 'string', enum: ['regular', 'template'] },
     },
     required: ['workspacePublicId', 'slug'],
   },
@@ -151,6 +182,11 @@ export const boardGetBySlugTool: Tool<BoardGetBySlugInput, Board> = {
         workspacePublicId: input.workspacePublicId,
         slug: input.slug,
       });
+      if (input.members?.length) queryParams.set('members', input.members.join(','));
+      if (input.labels?.length) queryParams.set('labels', input.labels.join(','));
+      if (input.lists?.length) queryParams.set('lists', input.lists.join(','));
+      if (input.dueDateFilters?.length) queryParams.set('dueDateFilters', input.dueDateFilters.join(','));
+      if (input.type) queryParams.set('type', input.type);
       const data = await client.request<Board>(`${ROUTES.BOARDS}/slug?${queryParams}`);
       return success(data);
     } catch (err) {
