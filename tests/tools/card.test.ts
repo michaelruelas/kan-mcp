@@ -593,7 +593,7 @@ describe('card tools', () => {
       globalThis.fetch = async (url, init) => {
         receivedUrl = url as string;
         receivedMethod = init?.method ?? 'GET';
-        return new Response(JSON.stringify(mockActivities), {
+        return new Response(JSON.stringify({ activities: mockActivities, hasMore: false, nextCursor: null }), {
           status: 200,
           ok: true,
         }) as Response;
@@ -605,8 +605,40 @@ describe('card tools', () => {
       expect(receivedUrl).toContain('/cards/card-1/activities');
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data).toEqual(mockActivities);
+        expect(result.data.activities).toEqual(mockActivities);
       }
+    });
+
+    test('passes limit parameter', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { cardPublicId: 'card-1', limit: 50 };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify({ activities: [], hasMore: false, nextCursor: null }), {
+          status: 200, ok: true,
+        }) as Response;
+      };
+
+      await cardListActivitiesTool.handler(client, input);
+      expect(receivedUrl).toContain('limit=50');
+    });
+
+    test('passes cursor parameter', async () => {
+      const client = new KanClient(TEST_API_KEY);
+      const input = { cardPublicId: 'card-1', cursor: '2024-01-01T00:00:00Z' };
+      let receivedUrl = '';
+
+      globalThis.fetch = async (url) => {
+        receivedUrl = url as string;
+        return new Response(JSON.stringify({ activities: [], hasMore: true, nextCursor: '2024-01-02T00:00:00Z' }), {
+          status: 200, ok: true,
+        }) as Response;
+      };
+
+      await cardListActivitiesTool.handler(client, input);
+      expect(receivedUrl).toContain('cursor=2024-01-01T00%3A00%3A00Z');
     });
 
     test('returns error when cardPublicId is missing', async () => {

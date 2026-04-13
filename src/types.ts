@@ -121,3 +121,18 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Activity {
+  publicId: string;
+  cardPublicId: string;
+  memberPublicId: string;
+  action: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActivityPage {
+  activities: Activity[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}

@@ -1,5 +1,5 @@
 import { KanClient } from '../client';
-import { Card, ToolResult, ROUTES } from '../types';
+import { Card, ToolResult, ROUTES, ActivityPage } from '../types';
 import { success, error, assertString, assertOptionalString, assertNumber, sanitizeHtml } from '../utils';
 import { toMcpError } from '../errors';
 
@@ -14,14 +14,47 @@ interface Tool<TInput = unknown, TOutput = unknown> {
   handler: (client: KanClient, input: TInput) => Promise<ToolResult<TOutput>>;
 }
 
-interface Activity {
-  publicId: string;
-  cardPublicId: string;
-  memberPublicId: string;
-  action: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export const cardCreateTool: Tool<CardCreateInput, Card> = {
+  name: 'card.create',
+  description: 'Create a new card. The description field accepts HTML for rich text formatting.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      listPublicId: { type: 'string' },
+      title: { type: 'string' },
+      description: { 
+        type: 'string',
+        description: 'HTML content. Use <p> for paragraphs, <br> for line breaks, <a href="...">link</a> for links. Plain text with \n will NOT render correctly.'
+      },
+      dueDate: { type: 'string' },
+    },
+    required: ['listPublicId', 'title'],
+  },
+  handler: async (client: KanClient, input: CardCreateInput): Promise<ToolResult<Card>> => {
+    try {
+      assertString(input.listPublicId, 'listPublicId');
+      assertString(input.title, 'title');
+      assertOptionalString(input.description, 'description');
+      assertOptionalString(input.dueDate, 'dueDate');
+      const body: Record<string, unknown> = {
+        listPublicId: input.listPublicId,
+        title: input.title,
+        description: input.description ? sanitizeHtml(input.description) : '',
+        labelPublicIds: [],
+        memberPublicIds: [],
+        position: 'start',
+      };
+      if (input.dueDate !== undefined) body.dueDate = input.dueDate;
+      const data = await client.request<Card>(ROUTES.CARDS, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      return success(data);
+    } catch (err) {
+      return error(toMcpError(err).message);
+    }
+  },
+};
 
 interface CardCreateInput {
   listPublicId: string;
@@ -68,49 +101,9 @@ interface CardRemoveMemberInput {
 
 interface CardListActivitiesInput {
   cardPublicId: string;
+  limit?: number;
+  cursor?: string;
 }
-
-export const cardCreateTool: Tool<CardCreateInput, Card> = {
-  name: 'card.create',
-  description: 'Create a new card. The description field accepts HTML for rich text formatting.',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      listPublicId: { type: 'string' },
-      title: { type: 'string' },
-      description: { 
-        type: 'string',
-        description: 'HTML content. Use <p> for paragraphs, <br> for line breaks, <a href="...">link</a> for links. Plain text with \n will NOT render correctly.'
-      },
-      dueDate: { type: 'string' },
-    },
-    required: ['listPublicId', 'title'],
-  },
-  handler: async (client: KanClient, input: CardCreateInput): Promise<ToolResult<Card>> => {
-    try {
-      assertString(input.listPublicId, 'listPublicId');
-      assertString(input.title, 'title');
-      assertOptionalString(input.description, 'description');
-      assertOptionalString(input.dueDate, 'dueDate');
-      const body: Record<string, unknown> = {
-        listPublicId: input.listPublicId,
-        title: input.title,
-        description: input.description ? sanitizeHtml(input.description) : '',
-        labelPublicIds: [],
-        memberPublicIds: [],
-        position: 'start',
-      };
-      if (input.dueDate !== undefined) body.dueDate = input.dueDate;
-      const data = await client.request<Card>(ROUTES.CARDS, {
-        method: 'POST',
-        body: JSON.stringify(body),
-      });
-      return success(data);
-    } catch (err) {
-      return error(toMcpError(err).message);
-    }
-  },
-};
 
 export const cardGetByIdTool: Tool<CardGetByIdInput, Card> = {
   name: 'card.getById',
@@ -299,22 +292,27 @@ export const cardRemoveMemberTool: Tool<CardRemoveMemberInput, Card> = {
   },
 };
 
-export const cardListActivitiesTool: Tool<CardListActivitiesInput, Activity[]> = {
+export const cardListActivitiesTool: Tool<CardListActivitiesInput, ActivityPage> = {
   name: 'card.listActivities',
   description: 'Get card activities',
   inputSchema: {
     type: 'object',
     properties: {
       cardPublicId: { type: 'string' },
+      limit: { type: 'number', minimum: 1, maximum: 100 },
+      cursor: { type: 'string', description: 'ISO timestamp cursor for pagination' },
     },
     required: ['cardPublicId'],
   },
-  handler: async (client: KanClient, input: CardListActivitiesInput): Promise<ToolResult<Activity[]>> => {
+  handler: async (client: KanClient, input: CardListActivitiesInput): Promise<ToolResult<ActivityPage>> => {
     try {
       assertString(input.cardPublicId, 'cardPublicId');
-      const data = await client.request<Activity[]>(
-        `${ROUTES.CARDS}/${input.cardPublicId}/activities`
-      );
+      const queryParams = new URLSearchParams();
+      if (input.limit !== undefined) queryParams.set('limit', String(input.limit));
+      if (input.cursor) queryParams.set('cursor', input.cursor);
+      const query = queryParams.toString();
+      const path = `${ROUTES.CARDS}/${input.cardPublicId}/activities${query ? `?${query}` : ''}`;
+      const data = await client.request<ActivityPage>(path);
       return success(data);
     } catch (err) {
       return error(toMcpError(err).message);
